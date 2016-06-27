@@ -131,3 +131,68 @@ if ( js.has(“user_id”))
 { "_id" : 1915163215, "name" : "小雅向前冲" }
 
 #Spark Experiment
+输入数据
+
+输入数据已经保存在了HDFS中：hdfs://192.168.70.141:8020/Assignment1。其中每行代表一篇文章，格式为：
+
+doc_id, doc_content
+
+文章样例：
+
+317,newsgroups rec motorcyclespath cantaloupe srv cs cmu rochester cornell batcomputer caen uwm linac uchinews quads geafrom gea quads uchicago gerardo enrique arnaez subject bike message apr midway uchicago sender news uchinews uchicago news system reply gea midway uchicago eduorganization university chicagodate mon apr gmtlines honda shadow intruder heard bikes plan time riding twin cruisers bikes dont massive goldw
+
+输出数据
+
+本次实验要求统计所有单词的Document Frequency，包含该单词的文章数。例如某个单词DF=10，表示共有10篇文章包括这个单词。
+
+实验要求以JSON格式输出所有DF=10的单词及其对应的倒排表键值，每行对应一个单词，格式定义如下：
+
+{w1: [ { w1_d1: [ w1_d1_p1, d1_p2 ] },{ w1_d2: [ w1_d2_p1 ] },{ w1_d3: [ w1_d3_p1 ] } ]}  
+
+{w2: [ { w2_d1: [ w1_d1_p1, d1_p2, d1_p3] },{ w2_d2: [ w1_d2_p1] } ]}  
+
+如上倒排表所示，单词w1出现在三篇文档中，文档的ID分别：w1_d1、w1_d2、w1_d3。该单词w1在文档w1_d1中出现了两次，出现的位置分别为w1_d1_p1和d1_p2，在文档w1_d2和w1_d3中各出现一次，其出现位置分别为w1_d2_p1和w1_d3_p1。 输出样例如下：
+
+{"circle":[{"642":[136] },{"120":[165] },{"1796":[75] },{"1862":[168] },{"611":[210] },{"646":[37] },{"519":[150] },{"1469":[944] },{"558":[108] },{"1463":[102] }]}  
+
+请把结果用println函数打印到标准输出。
+
+程序模板
+
+程序模板见project目录下，src/main/scala/com/dataman/demo/Assignment1.scala。 使用在线编辑器可以直接编辑该文件。
+
+编译程序
+
+我们提供了两种编译方式，如果 sbt 编译速度较慢，可以尝试用 maven 编译。在虚拟机的project文件夹下执行下面的命令。
+
+sbt:
+
+sbt clean assembly
+
+如果编译成功，编译结果保存在 target/scala-2.10/spark-demo-assembly-1.0.jar
+
+maven:
+
+mvn clean package
+
+如果编译成功，编译结果保存在 target/spark-demo-1.0.jar
+
+运行程序
+
+本次实验需要在docker container中运行spark程序，如果对container的概念不是很了解，建议先阅读https://en.wikipedia.org/wiki/LXC。
+
+1. 启动 docker container：
+
+docker run -it --net host -v /home/ubuntu/project:/tmp/project offlineregistry.dataman-inc.com/tsinghua/spark:1.5.0-hadoop2.6.0 bash
+
+该指令会创建一个 spark 的 docker container，并进入 container 的 /opt/spark/dist 目录，这也是 spark 的 home 目录。同时，将外部的 /home/ubuntu/project 挂载到了 container 内部的 /tmp/project 目录下，你可以在这里找到你的编译结果。
+
+2. 运行 spark：
+
+在 Spark 目录下，也就是container中的/opt/spark/dist，运行如下指令：
+
+bin/spark-submit --jars /tmp/project/target/spark-demo-1.0.jar --class com.dataman.demo.Assignment1 /tmp/project/target/spark-demo-1.0.jar > /tmp/project/data/answer
+
+运行结果会被重定向到 project 下的 data/answer 文件中
+
+3.  退出 docker 请使用 ctrl+p ctrl+q，这样可以确保 docker container 不会被停止。如果需要重新进入 docker，请使用 docker attach (containerID)，其中 containID 通过docker ps 查看。
